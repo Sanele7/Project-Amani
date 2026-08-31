@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Amani Test — Dashboard{% endblock %}
+
+{% block body %}
+<div class="dash">
+  <div class="dash-top">
+    <div class="wordmark" style="font-size:1.9rem;text-align:left">Amani Test</div>
+    <div class="who">{{ username }} · <a href="{{ url_for('logout') }}">Log out</a></div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <p class="hint">Scan an <strong>authorized</strong> target. The scanner refuses any host
+     not listed in <code>authorized_targets.txt</code>.</p>
+
+  <form method="post" action="{{ url_for('scan') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="scan-box">
+      <input name="target" type="text" placeholder="http://localhost:3000"
+             value="{{ target or '' }}" required>
+      <button type="submit">Run scan</button>
+    </div>
+  </form>
+  <p class="note">Try it against OWASP Juice Shop running locally.</p>
+
+  {% if error %}
+    <div class="flash error" style="margin-top:18px">{{ error }}</div>
+  {% endif %}
+
+  {% if findings is not none %}
+    <h2 style="margin:22px 0 6px;font-size:1.1rem">
+      Results for {{ target }} — {{ findings|length }} finding(s)
+    </h2>
+    {% if findings|length == 0 %}
+      <p class="note">No issues found by the current checks.</p>
+    {% endif %}
+    {% for f in findings %}
+      <div class="finding {{ f.severity|lower }}">
+        <h3>{{ f.name }} <span class="sev">{{ f.severity }}</span></h3>
+        <p><strong>Location:</strong> {{ f.location }}</p>
+        <p><strong>Evidence:</strong> {{ f.evidence }}</p>
+        <p><strong>Fix:</strong> {{ f.remediation }}</p>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

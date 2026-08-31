@@ -1,0 +1,6 @@
+# Amani Test — Authorized Targets
+# The scanner REFUSES to run against anything not listed here.
+# Only add: your own machine, local practice labs (Juice Shop, DVWA),
+# or targets you have WRITTEN permission to test.
+localhost
+127.0.0.1

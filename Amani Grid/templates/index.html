@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Grid</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .card{max-width:900px}
+  #map{height:440px;border-radius:10px;border:1px solid rgba(34,211,238,.25);margin-top:8px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:14px}
+  .controls > div{flex:1;min-width:130px}
+  .controls button{margin-top:0}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  .seg{display:inline-flex;border:1px solid rgba(34,211,238,.3);border-radius:8px;overflow:hidden}
+  .seg button{margin:0;border-radius:0;background:transparent;color:var(--muted);box-shadow:none;
+    padding:8px 14px;font-size:.74rem;border-right:1px solid rgba(34,211,238,.2)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--cyan);color:#012026}
+  .spacer{flex:1}
+  .exportlink{font-size:.78rem;padding:8px 12px;border:1px solid rgba(34,211,238,.35);border-radius:8px;color:var(--cyan)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:20px}
+  .stat{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:14px}
+  .stat .k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:"Anton",sans-serif;font-size:1.8rem;color:var(--cyan-hi);text-shadow:0 0 12px rgba(34,211,238,.4)}
+  .bars{margin-top:4px}
+  .bar{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin:3px 0}
+  .bar .track{flex:1;height:7px;background:#0a0f14;border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--cyan);box-shadow:0 0 8px rgba(34,211,238,.5)}
+  .spark{display:flex;align-items:flex-end;gap:4px;height:56px;margin-top:6px}
+  .spark .d{flex:1;background:var(--cyan-dim);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+  .spark .d:hover{background:var(--cyan)}
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0a0f14;color:var(--ink)}
+  .leaflet-popup-content{margin:12px 14px}
+  .popbtn{display:inline-block;margin:8px 6px 0 0;padding:6px 12px;font-size:.72rem;border-radius:6px;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;border:none;font-weight:700}
+  .popbtn.confirm{background:var(--cyan);color:#012026}
+  .popbtn.resolve{background:transparent;color:var(--ok);border:1px solid var(--ok)}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Grid</div>
+  <div class="subtitle">Service Outage Map</div>
+
+  <div class="card">
+    <h1>Report an outage</h1>
+    <p class="hint">Click the map to set a location, then submit. Confirm or resolve existing outages from their pins.</p>
+    <div id="map"></div>
+
+    <div class="controls">
+      <div>
+        <label for="service">Service</label>
+        <select id="service">{% for s in services %}<option>{{ s }}</option>{% endfor %}</select>
+      </div>
+      <div>
+        <label for="note">Note (optional)</label>
+        <input id="note" type="text" placeholder="e.g. out since 3pm">
+      </div>
+      <button id="submit">Report here</button>
+    </div>
+    <p class="note" id="status">No location selected yet — click the map.</p>
+
+    <div class="toolbar">
+      <div class="seg" id="filters">
+        <button data-f="active" class="on">Active</button>
+        <button data-f="24h">24h</button>
+        <button data-f="7d">7 days</button>
+        <button data-f="all">All</button>
+      </div>
+      <button id="heatToggle" class="exportlink" style="cursor:pointer">Heatmap: off</button>
+      <div class="spacer"></div>
+      <a class="exportlink" href="/export/csv">⬇ CSV</a>
+      <a class="exportlink" href="/export/geojson">⬇ GeoJSON</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h1>Live statistics</h1>
+    <div class="stats">
+      <div class="stat"><div class="k">Active outages</div><div class="v" id="s-active">–</div></div>
+      <div class="stat"><div class="k">Resolved</div><div class="v" id="s-resolved">–</div></div>
+      <div class="stat">
+        <div class="k">By service (active)</div>
+        <div class="bars" id="s-bars"></div>
+      </div>
+      <div class="stat">
+        <div class="k">Reports · last 7 days</div>
+        <div class="spark" id="s-spark"></div>
+      </div>
+    </div>
+    <p class="note" id="s-hot"></p>
+  </div>
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+const COLORS={Power:"#f9a825",Water:"#22d3ee",Internet:"#a855f7",Gas:"#ff4d6d",Transport:"#3ddc84"};
+let currentFilter="active", heatOn=false, heatLayer=null;
+
+const map=L.map('map').setView([-28.78,32.04],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+const markers=L.layerGroup().addTo(map);
+
+let picked=null, pickMarker=null;
+map.on('click',e=>{
+  picked=e.latlng;
+  if(pickMarker) map.removeLayer(pickMarker);
+  pickMarker=L.circleMarker(e.latlng,{radius:8,color:'#7fefff',fillColor:'#7fefff',fillOpacity:.9}).addTo(map);
+  document.getElementById('status').textContent=`Location set: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`;
+});
+
+function ago(sec){
+  if(sec<3600) return Math.max(1,Math.floor(sec/60))+"m ago";
+  if(sec<86400) return Math.floor(sec/3600)+"h ago";
+  return Math.floor(sec/86400)+"d ago";
+}
+
+function popup(r){
+  const active=r.status==='active';
+  let html=`<b style="color:${COLORS[r.service]||'#22d3ee'}">${r.service}</b>`+
+    (active?"":' <span style="color:var(--muted)">(resolved)</span>')+
+    `<br>${r.note||''}<br><small style="color:var(--muted)">${ago(r.age_seconds)} · ${r.confirmations} confirmations</small>`;
+  if(active){
+    html+=`<div><button class="popbtn confirm" onclick="confirmReport(${r.id})">Confirm</button>`+
+          `<button class="popbtn resolve" onclick="resolveReport(${r.id})">Mark resolved</button></div>`;
+  }
+  return html;
+}
+
+async function refresh(){
+  const res=await fetch('/api/reports?filter='+currentFilter);
+  const data=await res.json();
+  markers.clearLayers();
+  const heatPts=[];
+  data.forEach(r=>{
+    const active=r.status==='active';
+    const color=active?(COLORS[r.service]||'#22d3ee'):'#3a4a52';
+    L.circleMarker([r.lat,r.lng],
+      {radius:active?7:5,color:color,fillColor:color,fillOpacity:active?.8:.45,weight:1})
+      .bindPopup(popup(r)).addTo(markers);
+    if(active) heatPts.push([r.lat,r.lng,0.6+Math.min(r.confirmations,5)*0.1]);
+  });
+  if(heatLayer){map.removeLayer(heatLayer);heatLayer=null;}
+  if(heatOn){heatLayer=L.heatLayer(heatPts,{radius:28,blur:20,maxZoom:14}).addTo(map);}
+  loadStats();
+}
+
+window.confirmReport=async(id)=>{await fetch(`/api/report/${id}/confirm`,{method:'POST'});map.closePopup();refresh();};
+window.resolveReport=async(id)=>{await fetch(`/api/report/${id}/resolve`,{method:'POST'});map.closePopup();refresh();};
+
+async function loadStats(){
+  const s=await(await fetch('/api/stats')).json();
+  document.getElementById('s-active').textContent=s.active;
+  document.getElementById('s-resolved').textContent=s.resolved;
+  const max=Math.max(1,...Object.values(s.by_service));
+  document.getElementById('s-bars').innerHTML=Object.entries(s.by_service).map(([k,v])=>
+    `<div class="bar"><span style="width:64px">${k}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span>${v}</span></div>`).join('');
+  const mx=Math.max(1,...s.last7.map(d=>d.count));
+  document.getElementById('s-spark').innerHTML=s.last7.map(d=>
+    `<div class="d" style="height:${d.count/mx*100}%" title="${d.date}: ${d.count}"></div>`).join('');
+  document.getElementById('s-hot').textContent = s.hotspot
+    ? `Busiest cluster: ${s.hotspot.count} active outages near ${s.hotspot.lat}, ${s.hotspot.lng}.` : '';
+}
+
+document.getElementById('submit').addEventListener('click',async()=>{
+  if(!picked){document.getElementById('status').textContent='Click the map to set a location first.';return;}
+  const body={service:document.getElementById('service').value,lat:picked.lat,lng:picked.lng,note:document.getElementById('note').value};
+  const res=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){document.getElementById('note').value='';document.getElementById('status').textContent='Reported. Thank you.';
+    if(pickMarker){map.removeLayer(pickMarker);pickMarker=null;} picked=null; refresh();}
+});
+
+document.getElementById('filters').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on'); currentFilter=e.target.dataset.f; refresh();
+});
+
+document.getElementById('heatToggle').addEventListener('click',e=>{
+  heatOn=!heatOn; e.target.textContent='Heatmap: '+(heatOn?'on':'off'); refresh();
+});
+
+refresh();
+</script>
+</body>
+</html>

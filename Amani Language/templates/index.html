@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Language</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<style>
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr}}
+  .panel{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:16px}
+  .panel h2{font-size:.95rem;margin-bottom:8px}
+  .out{background:#0a0f14;border-radius:8px;padding:12px;margin-top:10px;font-size:.9rem;line-height:1.5}
+  .prob{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0;color:var(--muted)}
+  .prob b{color:var(--cyan-hi)}
+  .status{font-size:.82rem;color:var(--ok);margin-top:8px}
+  button{margin-top:10px}
+  select{max-width:120px}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Language</div>
+  <div class="subtitle">Low-Resource Language Model</div>
+
+  <div class="card">
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+    <h1>1 · Train on your corpus</h1>
+    <p class="hint">Paste text in any language. A larger corpus learns better.</p>
+    <form method="post">
+      <input type="hidden" name="action" value="train">
+      <textarea name="corpus" placeholder="Paste text here...">{{ sample }}</textarea>
+      <label for="n">Model order</label>
+      <select id="n" name="n">
+        <option value="2" {% if state.n==2 %}selected{% endif %}>Bigram (2)</option>
+        <option value="3" {% if state.n==3 %}selected{% endif %}>Trigram (3)</option>
+      </select>
+      <button type="submit">Train model</button>
+    </form>
+    {% if state.stats %}
+      <p class="status">Trained · {{ state.stats.tokens }} tokens ·
+        {{ state.stats.vocab }} unique words · {{ state.stats.contexts }} contexts</p>
+    {% endif %}
+  </div>
+
+  {% if state.model %}
+  <div class="card">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Generate text</h2>
+        <form method="post">
+          <input type="hidden" name="action" value="generate">
+          <input name="seed" type="text" placeholder="Optional starting words">
+          <button type="submit">Generate</button>
+        </form>
+        {% if output.generated is defined %}<div class="out">{{ output.generated }}</div>{% endif %}
+      </div>
+
+      <div class="panel">
+        <h2>Predict next word</h2>
+        <form method="post">
+          <input type="hidden" name="action" value="predict">
+          <input name="prompt" type="text" placeholder="Type a few words" value="{{ output.prompt or '' }}">
+          <button type="submit">Predict</button>
+        </form>
+        {% if output.predictions is defined %}
+          <div class="out">
+          {% if output.predictions %}
+            {% for word, p in output.predictions %}
+              <div class="prob"><span>{{ word }}</span><b>{{ (p*100)|round(1) }}%</b></div>
+            {% endfor %}
+          {% else %}<span class="note">No prediction — that context wasn't in the corpus.</span>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>Score the model (perplexity)</h2>
+      <p class="note">Lower means the model fits this text better.</p>
+      <form method="post">
+        <input type="hidden" name="action" value="perplexity">
+        <input name="sample" type="text" placeholder="A sentence to score">
+        <button type="submit">Measure</button>
+      </form>
+      {% if output.perplexity is defined %}
+        <div class="out">Perplexity: <b style="color:var(--cyan-hi)">{{ output.perplexity }}</b></div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+</body>
+</html>

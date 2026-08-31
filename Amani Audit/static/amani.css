@@ -1,0 +1,67 @@
+/* Amani — shared neon theme (Secured by Impunga Yehlathi) */
+:root{
+  --void:#050608; --panel:#0a0f14; --cyan:#22d3ee; --cyan-hi:#7fefff;
+  --cyan-dim:#0e7490; --ink:#cfe9f0; --muted:#5b7a85; --danger:#ff4d6d; --ok:#3ddc84;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(34,211,238,.10), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(34,211,238,.025) 0 1px, transparent 1px 3px),
+    var(--void);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;flex-direction:column;align-items:center;
+  padding:32px 20px;
+}
+.wordmark{
+  font-family:"Anton","Arial Black","Impact",sans-serif;
+  font-size:clamp(2rem,7vw,3rem);letter-spacing:.10em;text-transform:uppercase;
+  color:transparent;-webkit-text-stroke:2px var(--cyan);
+  text-shadow:0 0 8px var(--cyan),0 0 20px rgba(34,211,238,.6),0 0 44px rgba(34,211,238,.35);
+  text-align:center;line-height:1;
+}
+.subtitle{text-align:center;color:var(--muted);letter-spacing:.30em;text-transform:uppercase;font-size:.72rem;margin-top:12px}
+.card{
+  width:100%;max-width:760px;margin:28px 0 22px;padding:26px;
+  background:linear-gradient(180deg,rgba(13,20,26,.9),rgba(8,12,16,.9));
+  border:1px solid rgba(34,211,238,.22);border-radius:14px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.4) inset,0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(34,211,238,.06);
+}
+.card.narrow{max-width:400px}
+.card h1{font-size:1.15rem;font-weight:700;margin-bottom:4px}
+.card .hint{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+label{display:block;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password],input[type=number],textarea,select{
+  width:100%;padding:11px 13px;background:#05090c;border:1px solid rgba(34,211,238,.2);
+  border-radius:8px;color:var(--ink);font-size:.95rem;font-family:inherit;transition:border-color .15s,box-shadow .15s;
+}
+textarea{min-height:120px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.15),0 0 18px rgba(34,211,238,.25)}
+input::placeholder,textarea::placeholder{color:#37505a}
+input[type=file]{color:var(--muted);padding:10px 0}
+button,.btn{
+  display:inline-block;margin-top:18px;padding:12px 20px;background:var(--cyan);color:#012026;font-weight:800;
+  letter-spacing:.04em;border:none;border-radius:8px;cursor:pointer;text-transform:uppercase;font-size:.86rem;
+  text-decoration:none;box-shadow:0 0 18px rgba(34,211,238,.45);transition:transform .05s,box-shadow .15s,background .15s;
+}
+button:hover,.btn:hover{background:var(--cyan-hi);box-shadow:0 0 26px rgba(34,211,238,.7)}
+button:active,.btn:active{transform:translateY(1px)}
+a{color:var(--cyan);text-decoration:none}a:hover{color:var(--cyan-hi);text-decoration:underline}
+.brandmark{text-align:center;margin-top:14px;user-select:none}
+.brandmark .secured{font-size:.62rem;letter-spacing:.5em;text-transform:uppercase;color:#6fd8ec;text-shadow:0 0 6px rgba(34,211,238,.5)}
+.brandmark .company{margin-top:5px;font-family:"Anton","Arial Black",sans-serif;font-size:1.05rem;letter-spacing:.12em;
+  text-transform:uppercase;color:transparent;-webkit-text-stroke:1.2px var(--cyan);text-shadow:0 0 6px var(--cyan),0 0 16px rgba(34,211,238,.55)}
+.result{border-left:4px solid var(--muted);background:var(--panel);padding:12px 16px;margin:12px 0;border-radius:6px}
+.result.high,.result.danger{border-color:var(--danger)}
+.result.medium{border-color:#f9a825}
+.result.ok{border-color:var(--ok)}
+.result h3{font-size:.98rem;margin-bottom:4px}
+.result .tag{float:right;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.06)}
+.result p{font-size:.86rem;color:var(--muted);margin-top:3px}
+.note{color:var(--muted);font-size:.82rem;margin-top:8px}
+.flash{padding:10px 13px;border-radius:8px;font-size:.86rem;margin-bottom:14px}
+.flash.error{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.4);color:#ffb3c1}
+.flash.success{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.35);color:var(--cyan-hi)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

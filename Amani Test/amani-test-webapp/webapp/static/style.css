@@ -1,0 +1,177 @@
+/* ===========================================================================
+   Amani Test — neon security-console theme
+   Palette
+     --void      #050608   near-black background
+     --cyan      #22d3ee   electric neon primary
+     --cyan-hi   #7fefff   bright core / highlight
+     --cyan-dim  #0e7490   deep glow / borders
+     --ink       #cfe9f0   readable body text on black
+     --muted     #5b7a85   secondary text
+     --danger    #ff4d6d   neon error
+   The signature is the hollow-tube neon lettering; everything else stays quiet.
+   ======================================================================== */
+
+:root {
+  --void: #050608;
+  --panel: #0a0f14;
+  --cyan: #22d3ee;
+  --cyan-hi: #7fefff;
+  --cyan-dim: #0e7490;
+  --ink: #cfe9f0;
+  --muted: #5b7a85;
+  --danger: #ff4d6d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(34,211,238,.10), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(34,211,238,.025) 0 1px, transparent 1px 3px),
+    var(--void);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+/* ---- neon lettering (the signature) ------------------------------------ */
+.wordmark {
+  font-family: "Anton", "Arial Black", "Impact", sans-serif;
+  font-size: clamp(2.2rem, 8vw, 3.2rem);
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--cyan);
+  text-shadow:
+    0 0 8px var(--cyan),
+    0 0 20px rgba(34,211,238,.6),
+    0 0 44px rgba(34,211,238,.35);
+  text-align: center;
+  line-height: 1;
+}
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  font-size: .72rem;
+  margin-top: 12px;
+}
+
+/* ---- auth card --------------------------------------------------------- */
+.card {
+  width: 100%;
+  max-width: 380px;
+  margin: 34px 0 26px;
+  padding: 28px 26px 30px;
+  background: linear-gradient(180deg, rgba(13,20,26,.9), rgba(8,12,16,.9));
+  border: 1px solid rgba(34,211,238,.22);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.4) inset,
+    0 20px 60px rgba(0,0,0,.6),
+    0 0 40px rgba(34,211,238,.06);
+}
+.card h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  margin-bottom: 4px;
+}
+.card .hint { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+
+/* ---- form controls ----------------------------------------------------- */
+label {
+  display: block;
+  font-size: .74rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+input[type=text], input[type=email], input[type=password] {
+  width: 100%;
+  padding: 11px 13px;
+  background: #05090c;
+  border: 1px solid rgba(34,211,238,.2);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: .95rem;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(34,211,238,.15), 0 0 18px rgba(34,211,238,.25);
+}
+input::placeholder { color: #37505a; }
+
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  background: var(--cyan);
+  color: #012026;
+  font-weight: 800;
+  letter-spacing: .04em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: .88rem;
+  box-shadow: 0 0 18px rgba(34,211,238,.45);
+  transition: transform .05s, box-shadow .15s, background .15s;
+}
+button:hover { background: var(--cyan-hi); box-shadow: 0 0 26px rgba(34,211,238,.7); }
+button:active { transform: translateY(1px); }
+
+/* ---- links & meta rows ------------------------------------------------- */
+a { color: var(--cyan); text-decoration: none; }
+a:hover { color: var(--cyan-hi); text-decoration: underline; }
+.row-between { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.center-link { text-align: center; margin-top: 18px; font-size: .88rem; color: var(--muted); }
+.forgot { font-size: .82rem; }
+
+/* ---- flash messages ---------------------------------------------------- */
+.flash { padding: 10px 13px; border-radius: 8px; font-size: .86rem; margin-bottom: 14px; }
+.flash.error   { background: rgba(255,77,109,.1); border: 1px solid rgba(255,77,109,.4); color: #ffb3c1; }
+.flash.success { background: rgba(34,211,238,.08); border: 1px solid rgba(34,211,238,.35); color: var(--cyan-hi); }
+
+/* ---- brandmark footer (small, at the bottom, per brief) ---------------- */
+.brandmark { text-align: center; margin-top: 8px; user-select: none; }
+.brandmark .secured {
+  font-size: .62rem; letter-spacing: .5em; text-transform: uppercase;
+  color: #6fd8ec; text-shadow: 0 0 6px rgba(34,211,238,.5);
+}
+.brandmark .company {
+  margin-top: 5px;
+  font-family: "Anton", "Arial Black", sans-serif;
+  font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.2px var(--cyan);
+  text-shadow: 0 0 6px var(--cyan), 0 0 16px rgba(34,211,238,.55);
+}
+
+/* ---- dashboard --------------------------------------------------------- */
+.dash { width: 100%; max-width: 820px; }
+.dash-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 22px; }
+.dash-top .who { color: var(--muted); font-size: .9rem; }
+.scan-box { display: flex; gap: 10px; margin: 16px 0 8px; }
+.scan-box input { margin: 0; }
+.scan-box button { width: auto; margin: 0; padding: 12px 22px; white-space: nowrap; }
+.note { color: var(--muted); font-size: .8rem; }
+
+.finding { border-left: 4px solid var(--muted); background: var(--panel);
+  padding: 12px 16px; margin: 12px 0; border-radius: 6px; }
+.finding.high   { border-color: var(--danger); }
+.finding.medium { border-color: #f9a825; }
+.finding h3 { font-size: .98rem; margin-bottom: 4px; }
+.finding .sev { float: right; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.06); }
+.finding p { font-size: .86rem; color: var(--muted); margin-top: 3px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Satellite Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<style>
+  .uploads{display:flex;gap:16px;flex-wrap:wrap}
+  .uploads > div{flex:1;min-width:200px}
+  .resultimg{width:100%;border-radius:10px;border:1px solid rgba(34,211,238,.25);margin-top:8px}
+  .big{font-family:"Anton",sans-serif;font-size:2.2rem;color:var(--cyan-hi);text-shadow:0 0 14px rgba(34,211,238,.5)}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Satellite</div>
+  <div class="subtitle">Change Detection</div>
+
+  <div class="card">
+    <h1>Compare two images of the same place</h1>
+    <p class="hint">Upload a before and after image. Red marks what changed.</p>
+
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      <div class="uploads">
+        <div>
+          <label for="before">Before</label>
+          <input id="before" name="before" type="file" accept="image/*" required>
+        </div>
+        <div>
+          <label for="after">After</label>
+          <input id="after" name="after" type="file" accept="image/*" required>
+        </div>
+      </div>
+      <button type="submit">Detect change</button>
+    </form>
+
+    {% if result %}
+      <p class="note" style="margin-top:20px">Scene changed:
+        <span class="big">{{ result.percent }}%</span></p>
+      <img class="resultimg" src="data:image/png;base64,{{ result.image }}" alt="change overlay">
+    {% endif %}
+
+    <p class="note">Tip: get free before/after satellite tiles from the Copernicus
+       Browser (Sentinel-2), same location, two different dates.</p>
+  </div>
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+</body>
+</html>

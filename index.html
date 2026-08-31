@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+:root{--void:#050608;--cyan:#22d3ee;--cyan-hi:#7fefff;--ink:#cfe9f0;--muted:#5b7a85;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:
+  radial-gradient(1200px 700px at 50% -10%, rgba(34,211,238,.12), transparent 60%),
+  repeating-linear-gradient(0deg, rgba(34,211,238,.022) 0 1px, transparent 1px 3px), var(--void);
+  color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;flex-direction:column;align-items:center;padding:48px 20px;}
+.hero{font-family:"Anton","Arial Black",sans-serif;font-size:clamp(3rem,12vw,6rem);letter-spacing:.14em;
+  text-transform:uppercase;color:transparent;-webkit-text-stroke:2.5px var(--cyan);
+  text-shadow:0 0 12px var(--cyan),0 0 30px rgba(34,211,238,.6),0 0 60px rgba(34,211,238,.35);line-height:1;text-align:center}
+.tag{text-align:center;color:var(--muted);letter-spacing:.35em;text-transform:uppercase;font-size:.8rem;margin-top:16px}
+.tag em{color:var(--cyan-hi);font-style:normal}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;max-width:1000px;width:100%;margin-top:44px}
+.tile{background:linear-gradient(180deg,rgba(13,20,26,.9),rgba(8,12,16,.9));border:1px solid rgba(34,211,238,.2);
+  border-radius:14px;padding:22px;transition:border-color .15s,box-shadow .15s,transform .1s}
+.tile:hover{border-color:var(--cyan);box-shadow:0 0 34px rgba(34,211,238,.14);transform:translateY(-2px)}
+.tile .name{font-family:"Anton",sans-serif;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;
+  color:transparent;-webkit-text-stroke:1.4px var(--cyan);text-shadow:0 0 8px rgba(34,211,238,.5)}
+.tile .field{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:8px 0 12px}
+.tile p{font-size:.9rem;line-height:1.5;color:var(--ink)}
+.tile .port{font-size:.75rem;color:var(--cyan-hi);margin-top:14px;letter-spacing:.05em}
+.footer{text-align:center;margin-top:52px}
+.footer .secured{font-size:.66rem;letter-spacing:.5em;text-transform:uppercase;color:#6fd8ec;text-shadow:0 0 6px rgba(34,211,238,.5)}
+.footer .company{margin-top:6px;font-family:"Anton","Arial Black",sans-serif;font-size:1.3rem;letter-spacing:.12em;
+  text-transform:uppercase;color:transparent;-webkit-text-stroke:1.3px var(--cyan);text-shadow:0 0 6px var(--cyan),0 0 18px rgba(34,211,238,.55)}
+</style>
+</head>
+<body>
+  <div class="hero">Amani</div>
+  <div class="tag">Seven projects · <em>peace</em> through better technology</div>
+
+  <div class="grid">
+    <div class="tile">
+      <div class="name">Amani Test</div>
+      <div class="field">Cybersecurity</div>
+      <p>Web application vulnerability scanner. Crawls a target, proves real OWASP flaws, and writes a consultant-grade report — scoped to authorised targets only.</p>
+      <div class="port">runs on :5000</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Audit</div>
+      <div class="field">Cybersecurity</div>
+      <p>Mobile app security auditor. Unpacks an Android APK and scans it for hardcoded secrets, embedded URLs, and risky permissions.</p>
+      <div class="port">runs on :5003</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Language</div>
+      <div class="field">Artificial Intelligence</div>
+      <p>A language model for the languages big AI ignores. Train on any corpus, then generate text, predict words, and score the fit.</p>
+      <div class="port">runs on :5004</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Sign</div>
+      <div class="field">Artificial Intelligence</div>
+      <p>Live hand-sign recognition from a webcam, built toward South African Sign Language. Tracks the hand and reads the gesture in real time.</p>
+      <div class="port">open in browser</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Grid</div>
+      <div class="field">Data Science</div>
+      <p>Community service-outage map. People report power, water, and internet outages; everyone sees them plotted live — the dataset nobody else has.</p>
+      <div class="port">runs on :5001</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Satellite</div>
+      <div class="field">Data Science</div>
+      <p>Change detection between two satellite images of the same place — new buildings, cleared land, flooding — as a heatmap with a percentage.</p>
+      <div class="port">runs on :5002</div>
+    </div>
+    <div class="tile">
+      <div class="name">Amani Playground</div>
+      <div class="field">Game</div>
+      <p>A murder-mystery interrogation game where the suspects are AI characters who genuinely lie. Catch the real contradictions and name the killer.</p>
+      <div class="port">runs on :5005</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi Technologies</div>
+  </div>
+</body>
+</html>
