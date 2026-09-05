@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Language</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<style>
+  .card{max-width:860px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr}}
+  .panel{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:16px}
+  .panel h2{font-size:.95rem;margin-bottom:8px}
+  .out{background:#0a0f14;border-radius:8px;padding:12px;margin-top:10px;font-size:.9rem;line-height:1.55;min-height:20px}
+  .prob{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0;color:var(--muted)}
+  .prob b{color:var(--cyan-hi)}
+  .status{font-size:.82rem;color:var(--ok);margin-top:8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .chip{font-size:.75rem;padding:6px 12px;border:1px solid rgba(34,211,238,.35);border-radius:20px;color:var(--cyan);cursor:pointer;background:transparent}
+  .chip:hover{background:rgba(34,211,238,.1)}
+  .rangewrap{display:flex;align-items:center;gap:10px;margin-top:8px}
+  input[type=range]{flex:1}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+  .btnrow button{margin-top:10px}
+  .exportlink{display:inline-block;font-size:.78rem;padding:8px 12px;border:1px solid rgba(34,211,238,.35);border-radius:8px;color:var(--cyan);margin-top:10px}
+  .cmp{display:flex;gap:16px;margin-top:10px}
+  .cmp .box{flex:1;background:#0a0f14;border-radius:8px;padding:12px;text-align:center}
+  .cmp .box .k{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .cmp .box .v{font-family:"Anton",sans-serif;font-size:1.7rem;color:var(--cyan-hi)}
+  select{max-width:140px}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Language</div>
+  <div class="subtitle">Low-Resource Language Model</div>
+
+  <div class="card">
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+    <h1>1 · Your corpus</h1>
+    <p class="hint">Paste text in any language, or load a starter. Bigger corpus, better model.</p>
+    <div class="chips">
+      {% for c in corpora %}<button class="chip" data-load="{{ c }}">Load: {{ c }}</button>{% endfor %}
+      <button class="chip" id="saveCorpus">💾 Save corpus</button>
+      <a class="chip" href="/export/corpus">⬇ Export corpus</a>
+    </div>
+    <form method="post" action="/train">
+      <textarea id="corpus" name="corpus" placeholder="Paste text here…">{{ saved }}</textarea>
+      <div class="btnrow">
+        <label for="n" style="margin-top:14px">Model order</label>
+        <select id="n" name="n">
+          <option value="2" {% if state.n==2 %}selected{% endif %}>Bigram (2)</option>
+          <option value="3" {% if state.n==3 %}selected{% endif %}>Trigram (3)</option>
+        </select>
+        <button type="submit">Train model</button>
+        <button type="button" id="compareBtn" class="ghost" style="background:transparent;color:var(--cyan);border:1px solid rgba(34,211,238,.4);box-shadow:none">Compare bigram vs trigram</button>
+      </div>
+    </form>
+    {% if state.stats %}
+      <p class="status">Trained · {{ state.stats.tokens }} tokens · {{ state.stats.vocab }} unique words · {{ state.stats.contexts }} contexts</p>
+    {% endif %}
+    <div id="cmpOut"></div>
+  </div>
+
+  {% if state.model %}
+  <div class="card">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Generate text</h2>
+        <input id="seed" type="text" placeholder="Optional starting words">
+        <div class="rangewrap">
+          <label style="margin:0">Creativity</label>
+          <input id="temp" type="range" min="0.3" max="1.8" step="0.1" value="1.0">
+          <span id="tempVal" style="color:var(--cyan-hi);font-size:.85rem">1.0</span>
+        </div>
+        <button id="genBtn">Generate</button>
+        <div class="out" id="genOut"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Predict next word</h2>
+        <input id="prompt" type="text" placeholder="Type a few words">
+        <button id="predBtn">Predict</button>
+        <div class="out" id="predOut"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>Score the model (perplexity)</h2>
+      <p class="hint" style="margin-bottom:8px">Lower means the model fits this text better.</p>
+      <input id="sample" type="text" placeholder="A sentence to score">
+      <button id="pxBtn">Measure</button>
+      <div class="out" id="pxOut"></div>
+      <a class="exportlink" href="/export/model">⬇ Export model (JSON)</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+
+<script>
+const $=id=>document.getElementById(id);
+async function post(url,body){return (await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
+
+// Load bundled corpus into the textarea
+document.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',async()=>{
+  const r=await(await fetch('/load-corpus?name='+encodeURIComponent(b.dataset.load))).json();
+  if(r.text!==undefined){ $('corpus').value=r.text; }
+}));
+
+// Save corpus so it persists across sessions
+$('saveCorpus').addEventListener('click',async()=>{
+  const r=await post('/save-corpus',{text:$('corpus').value});
+  if(r.ok) $('saveCorpus').textContent='✓ Saved';
+  setTimeout(()=>$('saveCorpus').textContent='💾 Save corpus',1500);
+});
+
+// Compare bigram vs trigram
+$('compareBtn').addEventListener('click',async()=>{
+  const r=await post('/compare',{corpus:$('corpus').value});
+  const out=$('cmpOut');
+  if(r.error){out.innerHTML=`<div class="flash error" style="margin-top:12px">${r.error}</div>`;return;}
+  const fmt=v=>v===null?'—':v;
+  out.innerHTML=`<div class="cmp">
+    <div class="box"><div class="k">Bigram perplexity</div><div class="v">${fmt(r.results['2-gram'])}</div></div>
+    <div class="box"><div class="k">Trigram perplexity</div><div class="v">${fmt(r.results['3-gram'])}</div></div>
+  </div><p class="note">Lower is better. On a small corpus, bigram often wins because trigram runs out of examples.</p>`;
+});
+
+{% if state.model %}
+$('temp').addEventListener('input',e=>$('tempVal').textContent=e.target.value);
+$('genBtn').addEventListener('click',async()=>{
+  $('genOut').textContent='…';
+  const r=await post('/generate',{seed:$('seed').value,temperature:$('temp').value,max_words:40});
+  $('genOut').textContent=r.text||r.error;
+});
+$('predBtn').addEventListener('click',async()=>{
+  const r=await post('/predict',{prompt:$('prompt').value});
+  if(r.error){$('predOut').textContent=r.error;return;}
+  if(!r.predictions.length){$('predOut').innerHTML='<span class="note">That context wasn\'t in the corpus.</span>';return;}
+  $('predOut').innerHTML=r.predictions.map(([w,p])=>`<div class="prob"><span>${w}</span><b>${(p*100).toFixed(1)}%</b></div>`).join('');
+});
+$('pxBtn').addEventListener('click',async()=>{
+  const r=await post('/perplexity',{sample:$('sample').value});
+  $('pxOut').innerHTML=r.error?r.error:`Perplexity: <b style="color:var(--cyan-hi)">${r.perplexity}</b>`;
+});
+{% endif %}
+</script>
+</body>
+</html>

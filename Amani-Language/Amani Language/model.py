@@ -1,9 +1,9 @@
 """
-A pure-Python n-gram language model — the real statistical foundation that
-every language model builds on, trainable instantly on a small corpus.
+Amani Language — n-gram language model (build-out).
 
-Works for any language: it only needs text. Handles generation, next-word
-prediction, and perplexity (a genuine measure of how well it fits the language).
+Still pure Python (no heavy deps), now with temperature-controlled generation
+(low = safe/repetitive, high = adventurous), top-k next-word prediction, and
+perplexity scoring. Works for any language; it only needs text.
 """
 import random
 import re
@@ -12,8 +12,7 @@ from collections import defaultdict, Counter
 
 
 def tokenize(text):
-    # Words and sentence punctuation; lowercased. Unicode-aware so it works
-    # for non-Latin scripts too.
+    # Words and sentence punctuation, lowercased; Unicode-aware for any script.
     return re.findall(r"\w+|[.!?]", text.lower(), flags=re.UNICODE)
 
 
@@ -29,31 +28,30 @@ class NGramModel:
         if len(tokens) < self.n:
             raise ValueError("Corpus is too short — add more text.")
         self.vocab = set(tokens)
-        pad = ["<s>"] * (self.n - 1)
-        seq = pad + tokens + ["</s>"]
+        seq = ["<s>"] * (self.n - 1) + tokens + ["</s>"]
+        self.counts.clear()
         for i in range(len(seq) - self.n + 1):
             context = tuple(seq[i:i + self.n - 1])
-            nxt = seq[i + self.n - 1]
-            self.counts[context][nxt] += 1
+            self.counts[context][seq[i + self.n - 1]] += 1
         self.trained = True
         return {"tokens": len(tokens), "vocab": len(self.vocab), "contexts": len(self.counts)}
 
-    def _next_distribution(self, context):
+    def _dist(self, context):
         counter = self.counts.get(context)
         if not counter:
             return None
         total = sum(counter.values())
         return [(w, c / total) for w, c in counter.most_common()]
 
-    def predict(self, prompt, k=5):
+    def predict(self, prompt, k=6):
         tokens = tokenize(prompt)
         context = tuple((["<s>"] * (self.n - 1) + tokens)[-(self.n - 1):])
-        dist = self._next_distribution(context)
-        if not dist:
-            return []
-        return dist[:k]
+        dist = self._dist(context)
+        return dist[:k] if dist else []
 
-    def generate(self, max_words=40, seed=None):
+    def generate(self, max_words=40, seed=None, temperature=1.0):
+        """temperature: <1 sharpens toward likely words, >1 flattens toward variety."""
+        temp = max(0.1, float(temperature))
         if seed:
             tokens = tokenize(seed)
             context = tuple((["<s>"] * (self.n - 1) + tokens)[-(self.n - 1):])
@@ -62,29 +60,26 @@ class NGramModel:
             context = tuple(["<s>"] * (self.n - 1))
             out = []
         for _ in range(max_words):
-            dist = self._next_distribution(context)
+            dist = self._dist(context)
             if not dist:
                 break
-            words, probs = zip(*dist)
-            nxt = random.choices(words, weights=probs, k=1)[0]
+            words = [w for w, _ in dist]
+            weights = [p ** (1.0 / temp) for _, p in dist]  # temperature scaling
+            nxt = random.choices(words, weights=weights, k=1)[0]
             if nxt == "</s>":
                 break
             out.append(nxt)
             context = tuple((list(context) + [nxt])[-(self.n - 1):])
-        text = " ".join(out)
-        # tidy spacing before punctuation
-        return re.sub(r"\s+([.!?])", r"\1", text)
+        return re.sub(r"\s+([.!?])", r"\1", " ".join(out))
 
     def perplexity(self, text):
-        """Lower is better. Uses add-one smoothing so unseen words don't break it."""
+        """Lower is better. Add-one smoothing so unseen words don't break it."""
         tokens = tokenize(text)
         if not tokens:
             return None
-        pad = ["<s>"] * (self.n - 1)
-        seq = pad + tokens + ["</s>"]
+        seq = ["<s>"] * (self.n - 1) + tokens + ["</s>"]
         V = len(self.vocab) + 1
-        log_sum = 0.0
-        count = 0
+        log_sum, count = 0.0, 0
         for i in range(len(seq) - self.n + 1):
             context = tuple(seq[i:i + self.n - 1])
             nxt = seq[i + self.n - 1]
