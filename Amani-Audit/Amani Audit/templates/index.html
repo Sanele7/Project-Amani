@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<style>
+  .card{max-width:860px}
+  .scorewrap{display:flex;gap:20px;align-items:center;margin-top:20px;flex-wrap:wrap}
+  .score{font-family:"Anton",sans-serif;font-size:3rem;line-height:1;
+    color:transparent;-webkit-text-stroke:2px var(--cyan);text-shadow:0 0 14px rgba(34,211,238,.5)}
+  .score.critical,.score.high{-webkit-text-stroke-color:var(--danger);text-shadow:0 0 14px rgba(255,77,109,.5)}
+  .score.moderate{-webkit-text-stroke-color:#f9a825;text-shadow:0 0 14px rgba(249,168,37,.5)}
+  .grade{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .counts{display:flex;gap:10px;flex-wrap:wrap}
+  .pill{font-size:.78rem;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--muted)}
+  .pill.high{border-color:rgba(255,77,109,.5);color:#ffb3c1}
+  .pill.medium{border-color:rgba(249,168,37,.5);color:#ffd98a}
+  .pill.low{border-color:rgba(34,211,238,.4);color:var(--cyan-hi)}
+  .listbox{max-height:170px;overflow:auto;background:#05090c;border:1px solid rgba(34,211,238,.18);
+    border-radius:8px;padding:10px 12px;font-size:.8rem;color:var(--muted);margin-top:6px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .tags span{font-size:.74rem;padding:3px 9px;border-radius:6px;background:rgba(34,211,238,.08);color:var(--cyan-hi)}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Audit</div>
+  <div class="subtitle">Mobile App Security</div>
+
+  <div class="card">
+    <h1>Scan an APK</h1>
+    <p class="hint">Only scan apps you own or are authorised to test.</p>
+
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      <label for="apk">APK file</label>
+      <input id="apk" name="apk" type="file" accept=".apk,application/vnd.android.package-archive" required>
+      <button type="submit">Run audit</button>
+    </form>
+
+    {% if result %}
+      {% set s = result.summary %}
+      <div class="scorewrap">
+        <div>
+          <div class="score {{ s.grade|lower }}">{{ s.score }}</div>
+          <div class="grade">Risk score · {{ s.grade }}</div>
+        </div>
+        <div class="counts">
+          <span class="pill high">{{ s.counts.High }} High</span>
+          <span class="pill medium">{{ s.counts.Medium }} Medium</span>
+          <span class="pill low">{{ s.counts.Low }} Low</span>
+          <span class="pill">{{ s.files }} files</span>
+          <span class="pill">{{ s.perms|length }} permissions</span>
+        </div>
+      </div>
+
+      {% if s.trackers %}
+        <p class="note" style="margin-top:16px">Trackers / SDKs detected:</p>
+        <div class="tags">{% for t in s.trackers %}<span>{{ t }}</span>{% endfor %}</div>
+      {% endif %}
+
+      <h2 style="margin:20px 0 6px;font-size:1.05rem">Findings ({{ result.findings|length }})</h2>
+      {% if result.findings|length == 0 %}
+        <div class="result ok"><h3>No issues found by the current checks <span class="tag">Clean</span></h3>
+          <p>Deeper decompilation is on the roadmap.</p></div>
+      {% endif %}
+      {% for f in result.findings %}
+        <div class="result {{ f.severity|lower }}">
+          <h3>{{ f.name }} <span class="tag">{{ f.severity }}</span></h3>
+          <p><strong>Location:</strong> {{ f.location }}</p>
+          <p><strong>Evidence:</strong> {{ f.evidence }}</p>
+          <p><strong>Fix:</strong> {{ f.remediation }}</p>
+        </div>
+      {% endfor %}
+
+      {% if s.urls %}
+      <h2 style="margin:20px 0 6px;font-size:1.05rem">Embedded URLs</h2>
+      <div class="listbox">{% for u in s.urls %}{{ u }}<br>{% endfor %}</div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+</body>
+</html>
