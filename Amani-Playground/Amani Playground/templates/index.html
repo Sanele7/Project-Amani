@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='amani.css') }}">
+<style>
+  .card{max-width:900px}
+  .brief{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:14px 16px;
+    font-size:.9rem;line-height:1.5;color:var(--ink);margin-bottom:16px}
+  .brief b{color:var(--cyan-hi)}
+  .setup{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:8px}
+  .setup > div{flex:1;min-width:150px}
+  .setup button{margin:0}
+  .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  @media (max-width:760px){.cols{grid-template-columns:1fr}}
+  .suspects{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .suspect{flex:1;min-width:120px;text-align:left;padding:10px 12px;border:1px solid rgba(34,211,238,.25);
+    border-radius:10px;background:#05090c;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .suspect:hover{border-color:var(--cyan)}
+  .suspect.active{border-color:var(--cyan);box-shadow:0 0 18px rgba(34,211,238,.25)}
+  .suspect b{display:block;color:var(--cyan-hi);font-size:.9rem}
+  .suspect span{font-size:.74rem;color:var(--muted)}
+  .chat{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:14px;
+    height:280px;overflow:auto;margin-bottom:10px}
+  .msg{margin:8px 0;font-size:.9rem;line-height:1.45}
+  .msg.you{color:var(--cyan-hi)} .msg.them{color:var(--ink)} .msg.ev{color:#f9a825}
+  .msg .who{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+  .askrow{display:flex;gap:8px}.askrow input{margin:0}.askrow button{margin:0}
+  .evrow{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  .evrow select{margin:0;max-width:220px}.evrow button{margin:0;background:transparent;color:#f9a825;border:1px solid rgba(249,168,37,.5);box-shadow:none}
+  .panel{background:#05090c;border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:14px}
+  .panel h2{font-size:.95rem;margin-bottom:8px}
+  .nb{max-height:300px;overflow:auto;font-size:.82rem}
+  .nb .item{border-bottom:1px solid rgba(34,211,238,.1);padding:8px 0}
+  .nb .who{color:var(--cyan-hi);font-weight:700}
+  .nb .q{color:var(--muted)} .nb .a{color:var(--ink)}
+  .flag{background:rgba(249,168,37,.1);border:1px solid rgba(249,168,37,.4);color:#ffd98a;
+    padding:6px 10px;border-radius:6px;font-size:.8rem;margin-top:6px}
+  .accuse-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .verdict{font-family:"Anton",sans-serif;font-size:1.3rem;margin-top:12px}
+  .verdict.win{color:var(--ok)} .verdict.lose{color:var(--danger)}
+  .ghost{background:transparent;color:var(--cyan);border:1px solid rgba(34,211,238,.4);box-shadow:none}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Playground</div>
+  <div class="subtitle" id="case-title">{{ case.title }}</div>
+
+  <div class="card">
+    <div class="setup">
+      <div>
+        <label for="case-sel">Case</label>
+        <select id="case-sel">{% for c in cases %}<option value="{{ c.key }}">{{ c.title }}</option>{% endfor %}</select>
+      </div>
+      <div>
+        <label for="diff-sel">Difficulty</label>
+        <select id="diff-sel">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <button id="newcase" class="ghost">Start case</button>
+    </div>
+
+    <div class="brief" id="brief">
+      <b>The case:</b> {{ case.brief }}
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="suspects" id="suspects">
+          {% for s in case.suspects %}
+            <div class="suspect" data-key="{{ s.key }}"><b>{{ s.name }}</b><span>{{ s.role }}</span></div>
+          {% endfor %}
+        </div>
+
+        <div class="chat" id="chat"><p class="note">Select a suspect to begin questioning.</p></div>
+
+        <div class="askrow">
+          <input id="question" type="text" placeholder="Ask a question…" disabled>
+          <button id="ask" disabled>Ask</button>
+        </div>
+
+        <div class="evrow">
+          <select id="evidence" disabled>
+            {% for e in case.evidence %}<option value="{{ e.key }}">{{ e.name }}</option>{% endfor %}
+          </select>
+          <button id="present" disabled>Present evidence</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Detective's notebook</h2>
+        <div class="nb" id="notebook"><p class="note">Answers you collect appear here, with contradiction flags.</p></div>
+      </div>
+    </div>
+
+    <div class="accuse-row">
+      <span class="note">Name the killer:</span>
+      <select id="accused">{% for s in case.suspects %}<option value="{{ s.key }}">{{ s.name }}</option>{% endfor %}</select>
+      <button id="accuse" class="ghost">Accuse</button>
+    </div>
+    <div id="verdict"></div>
+  </div>
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+
+<script>
+let current=null;
+const chat=document.getElementById('chat');
+const q=document.getElementById('question');
+const askBtn=document.getElementById('ask');
+const presentBtn=document.getElementById('present');
+
+function selectSuspect(el){
+  document.querySelectorAll('.suspect').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active'); current=el.dataset.key;
+  q.disabled=false; askBtn.disabled=false;
+  document.getElementById('evidence').disabled=false; presentBtn.disabled=false;
+  q.focus();
+}
+document.querySelectorAll('.suspect').forEach(el=>el.addEventListener('click',()=>selectSuspect(el)));
+
+function add(who,text,cls){
+  const d=document.createElement('div');d.className='msg '+cls;
+  d.innerHTML=`<span class="who">${who}</span>${text}`;
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
+}
+
+function showFlags(flags){
+  flags.forEach(f=>{
+    const d=document.createElement('div');d.className='flag';d.textContent='⚑ '+f;
+    chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
+  });
+}
+
+async function refreshNotebook(){
+  const nb=await(await fetch('/notebook')).json();
+  const box=document.getElementById('notebook');
+  if(!nb.length){box.innerHTML='<p class="note">Answers you collect appear here.</p>';return;}
+  box.innerHTML=nb.map(e=>`<div class="item"><span class="who">${e.name}</span>
+    <div class="q">Q: ${e.q}</div><div class="a">A: ${e.a}</div></div>`).join('');
+}
+
+async function post(url,body){
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return r.json();
+}
+
+async function ask(){
+  const question=q.value.trim(); if(!current||!question)return;
+  add('You',question,'you'); q.value=''; askBtn.disabled=true;
+  add('…','thinking','them'); const t=chat.lastChild;
+  const d=await post('/ask',{suspect:current,question});
+  t.remove(); add(d.name||'Suspect', d.answer||d.error,'them');
+  if(d.flags) showFlags(d.flags);
+  askBtn.disabled=false; refreshNotebook();
+}
+askBtn.addEventListener('click',ask);
+q.addEventListener('keydown',e=>{if(e.key==='Enter')ask();});
+
+presentBtn.addEventListener('click',async()=>{
+  if(!current)return;
+  const ev=document.getElementById('evidence');
+  const label=ev.options[ev.selectedIndex].text;
+  add('You',`Presents evidence: ${label}`,'ev');
+  presentBtn.disabled=true; add('…','reacting','them'); const t=chat.lastChild;
+  const d=await post('/present',{suspect:current,evidence:ev.value});
+  t.remove(); add(d.name||'Suspect', d.answer||d.error,'them');
+  if(d.flags) showFlags(d.flags);
+  presentBtn.disabled=false; refreshNotebook();
+});
+
+document.getElementById('accuse').addEventListener('click',async()=>{
+  const d=await post('/accuse',{suspect:document.getElementById('accused').value});
+  const v=document.getElementById('verdict');
+  if(d.correct){v.className='verdict win';v.textContent=`Correct — ${d.guilty_name} did it. (Secret: ${d.guilty_secret})`;}
+  else{v.className='verdict lose';v.textContent=`Wrong. It was ${d.guilty_name}, not ${d.accused_name}.`;}
+});
+
+document.getElementById('newcase').addEventListener('click',async()=>{
+  await post('/new-case',{case:document.getElementById('case-sel').value,
+                          difficulty:document.getElementById('diff-sel').value});
+  location.reload();
+});
+</script>
+</body>
+</html>
