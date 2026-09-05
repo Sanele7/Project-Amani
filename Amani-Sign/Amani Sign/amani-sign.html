@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amani Sign</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+:root{--void:#050608;--cyan:#22d3ee;--cyan-hi:#7fefff;--ink:#cfe9f0;--muted:#5b7a85;--ok:#3ddc84;--danger:#ff4d6d;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:
+  radial-gradient(1200px 600px at 50% -10%, rgba(34,211,238,.10), transparent 60%),
+  repeating-linear-gradient(0deg, rgba(34,211,238,.025) 0 1px, transparent 1px 3px), var(--void);
+  color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;flex-direction:column;align-items:center;padding:26px 18px;}
+.wordmark{font-family:"Anton","Arial Black",sans-serif;font-size:clamp(2rem,7vw,3rem);letter-spacing:.10em;
+  text-transform:uppercase;color:transparent;-webkit-text-stroke:2px var(--cyan);
+  text-shadow:0 0 8px var(--cyan),0 0 20px rgba(34,211,238,.6),0 0 44px rgba(34,211,238,.35);text-align:center;line-height:1}
+.subtitle{text-align:center;color:var(--muted);letter-spacing:.30em;text-transform:uppercase;font-size:.72rem;margin-top:12px}
+.layout{display:grid;grid-template-columns:640px 300px;gap:18px;margin-top:22px;max-width:100%}
+@media (max-width:980px){.layout{grid-template-columns:1fr;justify-items:center}}
+.stage{position:relative;width:640px;max-width:100%;border-radius:14px;overflow:hidden;
+  border:1px solid rgba(34,211,238,.28);box-shadow:0 0 40px rgba(34,211,238,.12)}
+#canvas{width:100%;display:block;transform:scaleX(-1);background:#000}
+.readout{position:absolute;left:0;right:0;bottom:0;padding:14px 18px;
+  background:linear-gradient(0deg,rgba(5,6,8,.92),transparent);display:flex;justify-content:space-between;align-items:flex-end}
+.gesture{font-family:"Anton",sans-serif;font-size:2rem;color:var(--cyan-hi);text-shadow:0 0 16px rgba(34,211,238,.6);letter-spacing:.04em}
+.conf{font-size:.8rem;color:var(--muted);text-align:right}
+.panel{width:300px;max-width:100%;background:linear-gradient(180deg,rgba(13,20,26,.9),rgba(8,12,16,.9));
+  border:1px solid rgba(34,211,238,.22);border-radius:14px;padding:18px}
+.panel h2{font-size:.95rem;margin-bottom:4px}
+.panel p.hint{color:var(--muted);font-size:.82rem;margin-bottom:12px}
+label{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
+input[type=text]{width:100%;padding:10px 12px;background:#05090c;border:1px solid rgba(34,211,238,.2);
+  border-radius:8px;color:var(--ink);font-size:.95rem}
+input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+button{width:100%;margin-top:10px;padding:11px;background:var(--cyan);color:#012026;font-weight:800;letter-spacing:.04em;
+  border:none;border-radius:8px;cursor:pointer;text-transform:uppercase;font-size:.82rem;box-shadow:0 0 18px rgba(34,211,238,.4)}
+button:hover{background:var(--cyan-hi)} button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+button.ghost{background:transparent;color:var(--cyan);border:1px solid rgba(34,211,238,.4);box-shadow:none}
+button.warn{background:transparent;color:var(--danger);border:1px solid rgba(255,77,109,.5);box-shadow:none}
+.classes{margin-top:14px}
+.cls{display:flex;justify-content:space-between;align-items:center;background:#05090c;border:1px solid rgba(34,211,238,.15);
+  border-radius:8px;padding:8px 12px;margin:6px 0;font-size:.88rem}
+.cls .n{color:var(--cyan-hi);font-weight:700}
+.cls .c{color:var(--muted);font-size:.78rem}
+.cls button{width:auto;margin:0 0 0 8px;padding:4px 8px;font-size:.66rem;background:transparent;color:var(--muted);
+  border:1px solid rgba(255,255,255,.15);box-shadow:none}
+.status{color:var(--muted);font-size:.84rem;margin-top:12px;text-align:center;max-width:640px}
+.bar{display:flex;align-items:center;gap:8px;margin-top:6px}
+.bar .track{flex:1;height:8px;background:#0a0f14;border-radius:4px;overflow:hidden}
+.bar .fill{height:100%;background:var(--cyan);box-shadow:0 0 8px rgba(34,211,238,.5);transition:width .1s}
+.row{display:flex;gap:8px}.row button{margin-top:10px}
+.brandmark{text-align:center;margin-top:20px}
+.brandmark .secured{font-size:.62rem;letter-spacing:.5em;text-transform:uppercase;color:#6fd8ec;text-shadow:0 0 6px rgba(34,211,238,.5)}
+.brandmark .company{margin-top:5px;font-family:"Anton","Arial Black",sans-serif;font-size:1.05rem;letter-spacing:.12em;
+  text-transform:uppercase;color:transparent;-webkit-text-stroke:1.2px var(--cyan);text-shadow:0 0 6px var(--cyan),0 0 16px rgba(34,211,238,.55)}
+</style>
+</head>
+<body>
+  <div class="wordmark">Amani Sign</div>
+  <div class="subtitle">Trainable Sign Recognition</div>
+
+  <button id="start" style="width:auto;padding:12px 26px">Start camera</button>
+  <p class="status" id="status">Click “Start camera” and allow access. First load fetches the hand-tracking model.</p>
+
+  <div class="layout" id="layout" style="display:none">
+    <div class="stage">
+      <canvas id="canvas" width="640" height="480"></canvas>
+      <div class="readout">
+        <div class="gesture" id="gesture">—</div>
+        <div class="conf" id="conf"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Teach a sign</h2>
+      <p class="hint">Hold a hand shape, type its label, and capture samples. 20+ per sign works well.</p>
+      <label for="label">Sign label (e.g. A, B, Hello)</label>
+      <input id="label" type="text" placeholder="A" maxlength="24">
+      <button id="capture" disabled>Hold to capture samples</button>
+
+      <div class="bar"><div class="track"><div class="fill" id="capbar" style="width:0%"></div></div></div>
+
+      <div class="classes" id="classes"></div>
+
+      <div class="row">
+        <button id="save" class="ghost" disabled>Save</button>
+        <button id="load" class="ghost">Load</button>
+      </div>
+      <button id="clear" class="warn" disabled>Clear all training</button>
+    </div>
+  </div>
+
+  <div class="brandmark">
+    <div class="secured">Secured by</div>
+    <div class="company">Impunga Yehlathi</div>
+  </div>
+
+<script type="module">
+import {HandLandmarker, FilesetResolver, DrawingUtils}
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+const statusEl=document.getElementById('status');
+const canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d');
+const gestureEl=document.getElementById('gesture'), confEl=document.getElementById('conf');
+const capbar=document.getElementById('capbar');
+let handLandmarker, video, running=false, drawer, latestFeature=null;
+
+// Training data: { label: [featureVector, ...] }
+let samples={};
+let capturing=false, captureTarget=0, captureLabel="";
+
+const STORE_KEY="amani_sign_training_v1";
+
+async function setup(){
+  statusEl.textContent="Loading hand-tracking model…";
+  const fileset=await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+  handLandmarker=await HandLandmarker.createFromOptions(fileset,{
+    baseOptions:{modelAssetPath:
+      "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"},
+    numHands:1, runningMode:"VIDEO"});
+  drawer=new DrawingUtils(ctx);
+}
+
+// Turn 21 landmarks into a translation- and scale-invariant feature vector:
+// coordinates relative to the wrist, divided by hand size. This is what makes
+// a trained classifier robust to where the hand is on screen.
+function toFeature(lm){
+  const wrist=lm[0];
+  const rel=lm.map(p=>[p.x-wrist.x, p.y-wrist.y, (p.z||0)-(wrist.z||0)]);
+  // scale by distance wrist->middle-finger MCP (landmark 9)
+  const mid=rel[9]; const scale=Math.hypot(mid[0],mid[1],mid[2])||1e-6;
+  const f=[];
+  for(const [x,y,z] of rel){ f.push(x/scale, y/scale, z/scale); }
+  return f;
+}
+
+function dist2(a,b){let s=0;for(let i=0;i<a.length;i++){const d=a[i]-b[i];s+=d*d;}return s;}
+
+// k-nearest-neighbour classifier over the captured samples.
+function classify(feat){
+  const labels=Object.keys(samples).filter(l=>samples[l].length);
+  if(!labels.length) return null;
+  const all=[];
+  for(const l of labels){ for(const s of samples[l]){ all.push([dist2(feat,s), l]); } }
+  all.sort((a,b)=>a[0]-b[0]);
+  const k=Math.min(5, all.length);
+  const votes={};
+  for(let i=0;i<k;i++){ votes[all[i][1]]=(votes[all[i][1]]||0)+1; }
+  let best=null,bestv=0;
+  for(const [l,v] of Object.entries(votes)){ if(v>bestv){bestv=v;best=l;} }
+  return {label:best, conf:bestv/k};
+}
+
+function renderClasses(){
+  const box=document.getElementById('classes');
+  const labels=Object.keys(samples);
+  document.getElementById('save').disabled = labels.length===0;
+  document.getElementById('clear').disabled = labels.length===0;
+  if(!labels.length){ box.innerHTML='<p class="hint">No signs taught yet.</p>'; return; }
+  box.innerHTML=labels.map(l=>
+    `<div class="cls"><span class="n">${l}</span><span class="c">${samples[l].length} samples</span>
+       <button data-del="${l}">✕</button></div>`).join('');
+  box.querySelectorAll('button[data-del]').forEach(b=>
+    b.addEventListener('click',()=>{ delete samples[b.dataset.del]; renderClasses(); }));
+}
+
+async function loop(){
+  if(!running) return;
+  if(video.readyState>=2){
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const res=handLandmarker.detectForVideo(video, performance.now());
+    if(res.landmarks && res.landmarks.length){
+      const lm=res.landmarks[0];
+      drawer.drawConnectors(lm, HandLandmarker.HAND_CONNECTIONS, {color:"#22d3ee", lineWidth:3});
+      drawer.drawLandmarks(lm, {color:"#7fefff", radius:4});
+      latestFeature=toFeature(lm);
+
+      if(capturing){
+        samples[captureLabel].push(latestFeature);
+        const got=samples[captureLabel].length;
+        capbar.style.width=Math.min(100, got/captureTarget*100)+"%";
+        gestureEl.textContent="capturing "+captureLabel;
+        confEl.textContent=got+" / "+captureTarget;
+        if(got>=captureTarget){ capturing=false; capbar.style.width="0%"; renderClasses();
+          statusEl.textContent=`Captured ${got} samples for “${captureLabel}”. Teach another, or just show the sign to test it.`; }
+      } else {
+        const r=classify(latestFeature);
+        if(r){ gestureEl.textContent=r.label; confEl.textContent="confidence "+Math.round(r.conf*100)+"%"; }
+        else { gestureEl.textContent="—"; confEl.textContent="teach a sign to begin"; }
+      }
+    } else {
+      latestFeature=null;
+      if(!capturing){ gestureEl.textContent="—"; confEl.textContent="no hand detected"; }
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+document.getElementById('capture').addEventListener('click',()=>{
+  const label=document.getElementById('label').value.trim();
+  if(!label){ statusEl.textContent="Type a label first (e.g. A)."; return; }
+  if(!samples[label]) samples[label]=[];
+  captureLabel=label; captureTarget=samples[label].length+30; capturing=true;
+  statusEl.textContent=`Hold the “${label}” shape steady… capturing 30 samples.`;
+});
+
+document.getElementById('save').addEventListener('click',()=>{
+  localStorage.setItem(STORE_KEY, JSON.stringify(samples));
+  statusEl.textContent="Training saved to this browser.";
+});
+document.getElementById('load').addEventListener('click',()=>{
+  const raw=localStorage.getItem(STORE_KEY);
+  if(!raw){ statusEl.textContent="No saved training found in this browser."; return; }
+  samples=JSON.parse(raw); renderClasses();
+  statusEl.textContent="Loaded saved training.";
+});
+document.getElementById('clear').addEventListener('click',()=>{
+  if(confirm("Clear all taught signs?")){ samples={}; renderClasses(); statusEl.textContent="Training cleared."; }
+});
+
+document.getElementById('start').addEventListener('click', async ()=>{
+  try{
+    if(!handLandmarker) await setup();
+    statusEl.textContent="Requesting camera…";
+    const stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
+    video=document.createElement('video'); video.srcObject=stream; video.playsInline=true; await video.play();
+    document.getElementById('layout').style.display="grid";
+    document.getElementById('start').style.display="none";
+    document.getElementById('capture').disabled=false;
+    renderClasses();
+    statusEl.textContent="Ready. Teach your first sign: hold a shape, type a label, press capture.";
+    running=true; loop();
+  }catch(e){
+    statusEl.textContent="Couldn't start: "+e.message+" (use Chrome/Edge, and allow the camera).";
+  }
+});
+</script>
+</body>
+</html>
