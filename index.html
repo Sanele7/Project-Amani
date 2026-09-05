@@ -12,25 +12,32 @@ body{min-height:100vh;background:
   radial-gradient(1200px 700px at 50% -10%, rgba(34,211,238,.12), transparent 60%),
   repeating-linear-gradient(0deg, rgba(34,211,238,.022) 0 1px, transparent 1px 3px), var(--void);
   color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
-  display:flex;flex-direction:column;align-items:center;padding:48px 20px;}
-.hero{font-family:"Anton","Arial Black",sans-serif;font-size:clamp(3rem,12vw,6rem);letter-spacing:.14em;
+  display:flex;flex-direction:column;align-items:center;padding:48px 18px;}
+.hero{font-family:"Anton","Arial Black",sans-serif;font-size:clamp(3rem,13vw,6rem);letter-spacing:.14em;
   text-transform:uppercase;color:transparent;-webkit-text-stroke:2.5px var(--cyan);
   text-shadow:0 0 12px var(--cyan),0 0 30px rgba(34,211,238,.6),0 0 60px rgba(34,211,238,.35);line-height:1;text-align:center}
-.tag{text-align:center;color:var(--muted);letter-spacing:.35em;text-transform:uppercase;font-size:.8rem;margin-top:16px}
+.tag{text-align:center;color:var(--muted);letter-spacing:.3em;text-transform:uppercase;font-size:clamp(.62rem,2.5vw,.8rem);margin-top:16px;padding:0 10px}
 .tag em{color:var(--cyan-hi);font-style:normal}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;max-width:1000px;width:100%;margin-top:44px}
-.tile{background:linear-gradient(180deg,rgba(13,20,26,.9),rgba(8,12,16,.9));border:1px solid rgba(34,211,238,.2);
-  border-radius:14px;padding:22px;transition:border-color .15s,box-shadow .15s,transform .1s}
-.tile:hover{border-color:var(--cyan);box-shadow:0 0 34px rgba(34,211,238,.14);transform:translateY(-2px)}
-.tile .name{font-family:"Anton",sans-serif;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:1000px;width:100%;margin-top:40px}
+.tile{display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(13,20,26,.9),rgba(8,12,16,.9));
+  border:1px solid rgba(34,211,238,.2);border-radius:14px;padding:22px;text-decoration:none;color:inherit;
+  transition:border-color .15s,box-shadow .15s,transform .1s}
+.tile:hover{border-color:var(--cyan);box-shadow:0 0 34px rgba(34,211,238,.16);transform:translateY(-3px);text-decoration:none}
+.tile:active{transform:translateY(-1px)}
+.tile .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.tile .name{font-family:"Anton",sans-serif;font-size:1.3rem;letter-spacing:.05em;text-transform:uppercase;
   color:transparent;-webkit-text-stroke:1.4px var(--cyan);text-shadow:0 0 8px rgba(34,211,238,.5)}
-.tile .field{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:8px 0 12px}
-.tile p{font-size:.9rem;line-height:1.5;color:var(--ink)}
-.tile .port{font-size:.75rem;color:var(--cyan-hi);margin-top:14px;letter-spacing:.05em}
-.footer{text-align:center;margin-top:52px}
+.tile .go{font-size:1.3rem;color:var(--cyan);flex-shrink:0;transition:transform .15s}
+.tile:hover .go{transform:translate(3px,-3px)}
+.tile .field{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:8px 0 12px}
+.tile p{font-size:.9rem;line-height:1.5;color:var(--ink);flex:1}
+.tile .port{font-size:.72rem;color:var(--cyan-hi);margin-top:14px;letter-spacing:.04em;opacity:.85}
+.hint{max-width:640px;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.6;margin-top:34px;padding:0 10px}
+.footer{text-align:center;margin-top:38px}
 .footer .secured{font-size:.66rem;letter-spacing:.5em;text-transform:uppercase;color:#6fd8ec;text-shadow:0 0 6px rgba(34,211,238,.5)}
 .footer .company{margin-top:6px;font-family:"Anton","Arial Black",sans-serif;font-size:1.3rem;letter-spacing:.12em;
   text-transform:uppercase;color:transparent;-webkit-text-stroke:1.3px var(--cyan);text-shadow:0 0 6px var(--cyan),0 0 18px rgba(34,211,238,.55)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -38,49 +45,59 @@ body{min-height:100vh;background:
   <div class="tag">Seven projects · <em>peace</em> through better technology</div>
 
   <div class="grid">
-    <div class="tile">
-      <div class="name">Amani Test</div>
+    <a class="tile" href="http://localhost:5000" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Test</span><span class="go">↗</span></div>
       <div class="field">Cybersecurity</div>
-      <p>Web application vulnerability scanner. Crawls a target, proves real OWASP flaws, and writes a consultant-grade report — scoped to authorised targets only.</p>
-      <div class="port">runs on :5000</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Audit</div>
+      <p>Web application vulnerability scanner. Crawls a target, proves real OWASP flaws, and writes a consultant-grade report — authorised targets only.</p>
+      <div class="port">Opens localhost:5000</div>
+    </a>
+
+    <a class="tile" href="http://localhost:5003" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Audit</span><span class="go">↗</span></div>
       <div class="field">Cybersecurity</div>
-      <p>Mobile app security auditor. Unpacks an Android APK and scans it for hardcoded secrets, embedded URLs, and risky permissions.</p>
-      <div class="port">runs on :5003</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Language</div>
+      <p>Mobile app security auditor. Unpacks an APK and reports hardcoded secrets, risky settings, and trackers with a risk score.</p>
+      <div class="port">Opens localhost:5003</div>
+    </a>
+
+    <a class="tile" href="http://localhost:5004" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Language</span><span class="go">↗</span></div>
       <div class="field">Artificial Intelligence</div>
-      <p>A language model for the languages big AI ignores. Train on any corpus, then generate text, predict words, and score the fit.</p>
-      <div class="port">runs on :5004</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Sign</div>
+      <p>A language model for the languages big AI ignores. Train on a corpus, then generate, predict, and score — with an isiZulu starter.</p>
+      <div class="port">Opens localhost:5004</div>
+    </a>
+
+    <a class="tile" href="Amani-Sign/Amani Sign/amani-sign.html" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Sign</span><span class="go">↗</span></div>
       <div class="field">Artificial Intelligence</div>
-      <p>Live hand-sign recognition from a webcam, built toward South African Sign Language. Tracks the hand and reads the gesture in real time.</p>
-      <div class="port">open in browser</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Grid</div>
+      <p>Live hand-sign recognition from a webcam that you can teach your own signs. Opens directly — no server needed.</p>
+      <div class="port">Opens in your browser</div>
+    </a>
+
+    <a class="tile" href="http://localhost:5001" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Grid</span><span class="go">↗</span></div>
       <div class="field">Data Science</div>
-      <p>Community service-outage map. People report power, water, and internet outages; everyone sees them plotted live — the dataset nobody else has.</p>
-      <div class="port">runs on :5001</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Satellite</div>
+      <p>Community service-outage map. Report power, water, and internet outages; confirm and resolve them; export the open dataset.</p>
+      <div class="port">Opens localhost:5001</div>
+    </a>
+
+    <a class="tile" href="http://localhost:5002" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Satellite</span><span class="go">↗</span></div>
       <div class="field">Data Science</div>
-      <p>Change detection between two satellite images of the same place — new buildings, cleared land, flooding — as a heatmap with a percentage.</p>
-      <div class="port">runs on :5002</div>
-    </div>
-    <div class="tile">
-      <div class="name">Amani Playground</div>
+      <p>Change detection between two satellite images of the same place — new buildings, cleared land, flooding — as a heatmap.</p>
+      <div class="port">Opens localhost:5002</div>
+    </a>
+
+    <a class="tile" href="http://localhost:5005" target="_blank" rel="noopener">
+      <div class="top"><span class="name">Amani Playground</span><span class="go">↗</span></div>
       <div class="field">Game</div>
-      <p>A murder-mystery interrogation game where the suspects are AI characters who genuinely lie. Catch the real contradictions and name the killer.</p>
-      <div class="port">runs on :5005</div>
-    </div>
+      <p>A murder-mystery interrogation game where the AI suspects genuinely lie. Present evidence, catch contradictions, name the killer.</p>
+      <div class="port">Opens localhost:5005</div>
+    </a>
   </div>
+
+  <p class="hint">Each card opens its project in a new tab. The Flask projects need to be
+     running first (<code>python app.py</code> in that project's folder) — then the card
+     opens it. Amani Sign opens straight away.</p>
 
   <div class="footer">
     <div class="secured">Secured by</div>

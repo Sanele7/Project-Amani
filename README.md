@@ -1,48 +1,78 @@
-# Amani — Projects 2–7
+# Amani
 
-Six projects, one brand, one neon interface — the siblings of Amani Test.
-Every project is self-contained in its own folder and runs on its own port, so
-you can run several at once. Open **index.html** in a browser for the portfolio
-landing page that ties all seven together.
+**Seven projects across cybersecurity, AI, data science, and games — one brand, one interface.**
+*Secured by Impunga Yehlathi Technologies.*
 
-| Project | Folder | What it does | How to run |
-|---|---|---|---|
-| Amani Audit | `Amani Audit` | Scan an APK for hardcoded secrets | Flask · port 5003 |
-| Amani Language | `Amani Language` | Train a language model on any text | Flask · port 5004 |
-| Amani Sign | `Amani Sign` | Live webcam sign recognition | Open the HTML file |
-| Amani Grid | `Amani Grid` | Community service-outage map | Flask · port 5001 |
-| Amani Satellite Detection | `Amani Satellite Detection` | Image change detection | Flask · port 5002 |
-| Amani Playground | `Amani Playground` | LLM interrogation mystery game | Flask · port 5005 (needs Ollama) |
+Amani (isiZulu/Swahili for *peace*) is a portfolio of working tools built around a
+simple idea: technology that protects people and serves communities that mainstream
+software overlooks. Every project runs locally, is free to run, and shares the same
+neon interface.
 
-## Where to put this
-Extract this folder into:
-`C:\Users\Sanele Ngcobo\OneDrive\Documents\Project_Amani\`
-so these sit right next to your `Amani Test` folder.
+Open **`index.html`** for the portfolio home page linking to all seven.
 
-## Running any Flask project (same five steps as Amani Test)
-Open Command Prompt and, for example, for Amani Grid:
+---
 
-    cd "C:\Users\Sanele Ngcobo\OneDrive\Documents\Project_Amani\Amani Grid"
-    python -m venv venv
-    venv\Scripts\activate.bat
-    pip install -r requirements.txt
-    python app.py
+## The projects
 
-Then open the port shown above (e.g. http://localhost:5001). Each project has
-its own `venv` and its own `requirements.txt`. Press Ctrl+C to stop.
+### Cybersecurity
+- **Amani Test** — a web application vulnerability scanner. Crawls a target, proves
+  real OWASP issues (reflected XSS, missing security headers), and produces a
+  consultant-grade report. Scoped to authorised targets only, with a login system
+  built to the same standard it audits. *Flask · port 5000*
+- **Amani Audit** — a mobile app security auditor. Unpacks an Android APK and reports
+  hardcoded secrets, risky manifest settings, dangerous permissions, and third-party
+  trackers, rolled into a 0–100 risk score. *Flask · port 5003*
 
-## Amani Sign — no install
-Just double-click **Amani Sign\amani-sign.html** to open it in Chrome or Edge and
-allow the camera. (Needs internet the first time to load the tracking model.)
+### Artificial Intelligence
+- **Amani Language** — a language model for low-resource languages like isiZulu.
+  Build and save a corpus, train a bigram/trigram model, then generate text, predict
+  words, and measure quality. Ships with an isiZulu starter corpus. *Flask · port 5004*
+- **Amani Sign** — real-time hand-sign recognition from a webcam that you can *teach*
+  your own signs, built toward South African Sign Language. Runs in the browser, no
+  install. *Open the HTML file*
 
-## Amani Playground — needs a free local AI
-Install Ollama from https://ollama.com, then run `ollama pull llama3.2` and keep
-Ollama open. See that project's README for details.
+### Data Science
+- **Amani Grid** — a community service-outage map. Report power/water/internet
+  outages, confirm and resolve them, and export the open dataset as CSV/GeoJSON.
+  *Flask · port 5001*
+- **Amani Satellite Detection** — change detection between two satellite images of
+  the same place, highlighting new construction, cleared land, or flooding.
+  *Flask · port 5002*
 
-## Honest status
-These are working **foundations**, not finished products. Each one does something
-real today and each has a "What's next" section in its own README showing the
-build-out that takes it to Amani Test's depth. Build them out one at a time — a
-few finished, polished projects beat seven half-built ones.
+### Game
+- **Amani Playground** — a murder-mystery interrogation game where the suspects are
+  AI characters who genuinely lie. Present evidence, catch contradictions in a
+  detective's notebook, and name the killer. Runs on a free local AI (Ollama).
+  *Flask · port 5005*
 
-Secured by Impunga Yehlathi Technologies.
+---
+
+## Running a project
+
+Each project is self-contained in its own folder with its own `requirements.txt`.
+For any Flask project (example: Amani Grid):
+
+```bash
+cd "Amani Grid"
+python -m venv venv           # first time only
+venv\Scripts\activate.bat     # Windows (use: source venv/bin/activate on Mac/Linux)
+pip install -r requirements.txt
+python app.py
+```
+
+Then open the port listed above (e.g. http://localhost:5001).
+
+- **Amani Sign** needs no server — open `Amani Sign/amani-sign.html` in Chrome or Edge.
+- **Amani Playground** needs [Ollama](https://ollama.com): install it, run
+  `ollama pull llama3.2`, and keep it running.
+
+---
+
+## Tech
+
+Python · Flask · SQLite · vanilla JavaScript · Leaflet · MediaPipe · Ollama.
+No paid services required.
+
+## Author
+
+Built by **Sanele Ngcobo** — BSc Honours, Computer Science, University of Zululand.
